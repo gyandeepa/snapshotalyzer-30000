@@ -29,7 +29,7 @@ def snapshots():
 help="Only snapshots for project (tag Project:,name>)")
 def list_snapshots(project):
     "List EC2 Snapshots"
-    instances = filter_instas(project)
+    instances = filter_instances(project)
 
     for i in instances:
         for v in i.volumes.all():
@@ -52,7 +52,7 @@ def volumes():
 @volumes.command('list')
 @click.option('--project', default=None,
 help="Only volumes for project (tag Project:,name>)")
-def list_volumes(project):
+def list_snapshots(project):
     "List EC2 Volumes"
 
     instances = filter_instances(project)
@@ -123,8 +123,11 @@ def stop_instances(project):
 
     for i in instances:
         print("Stopping {0}...".format(i.id))
-        i.stop()
-
+        try:
+            i.stop()
+        except botocore.exceptions.ClientError as e:
+            print(" Could not stop {0} ".format(i.id) + str(e))
+            continue
     return
 
 @instances.command('start')
@@ -137,7 +140,11 @@ def start_instances(project):
 
     for i in instances:
         print("Starting {0}...".format(i.id))
-        i.start()
+        try:
+            i.start()
+        except botocore.exceptions.ClientError as e:
+            print(" Could not start {0} ".format(i.id) + str(e))
+            continue
 
     return
 
